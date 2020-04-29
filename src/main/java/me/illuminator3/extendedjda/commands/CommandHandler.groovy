@@ -64,7 +64,13 @@ class CommandHandler
     void registerCommand(final Command command, final JDA jda)
     {
         if (REGISTERED_COMMANDS.contains(command)) throw new UnsupportedOperationException("Command is already registered")
-        if (!REGISTERED) jda.addEventListener(this)
+
+        if (!REGISTERED)
+        {
+            REGISTERED = true
+
+            jda.addEventListener(this)
+        }
 
         REGISTERED_COMMANDS.add(command)
     }

@@ -40,7 +40,13 @@ class EventManager
         throws UnsupportedOperationException
     {
         if (REGISTERED_FILTERS.contains(filter)) throw new UnsupportedOperationException("Filter is already registered")
-        if (!REGISTERED) jda.addEventListener(this)
+
+        if (!REGISTERED)
+        {
+            REGISTERED = true
+
+            jda.addEventListener(this)
+        }
 
         REGISTERED_FILTERS.add(filter)
     }
@@ -50,7 +56,13 @@ class EventManager
         throws UnsupportedOperationException
     {
         if (REGISTERED_LISTENERS.contains(listener)) throw new UnsupportedOperationException("Listener is already registered")
-        if (!REGISTERED) jda.addEventListener(this)
+
+        if (!REGISTERED)
+        {
+            REGISTERED = true
+
+            jda.addEventListener(this)
+        }
 
         def map = new TreeMap<>()
 
