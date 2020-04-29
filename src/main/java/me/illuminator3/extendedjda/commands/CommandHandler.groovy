@@ -69,6 +69,14 @@ class CommandHandler
         UNKOWN_COMMAND_MESSAGE = unkownCommandMessage
     }
 
+    static
+    void registerCommand(final Command command)
+    {
+        if (REGISTERED_COMMANDS.contains(command)) throw new UnsupportedOperationException("Command is already registered")
+
+        REGISTERED_COMMANDS.add(command)
+    }
+
     @Override
     void onEvent(final GenericEvent event)
     {
@@ -93,9 +101,14 @@ class CommandHandler
                 return
             }
 
-            def command = possible.get(0)
-
-            command.onExecute(e.getJDA(), e.getMember().getUser(), e.getChannel(), cmd.split(" ").length <= 1 ? new String[0] : System.arraycopy(cmd.split(" "), 1, [], 0, cmd.split(" ").length - 1))
+            possible
+                    .get(0)
+                    .onExecute(
+                        e.getJDA(),
+                        e.getMember().getUser(),
+                        e.getChannel(),
+                        cmd.split(" ") .length <= 1 ?  new String[0] : System.arraycopy(cmd.split(" "), 1, [], 0, cmd.split(" ").length - 1)
+                    )
         }
     }
 }
