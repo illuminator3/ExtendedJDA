@@ -16,7 +16,7 @@
 
 package me.illuminator3.extendedjda.commands
 
-import net.dv8tion.jda.api.EmbedBuilder
+import me.illuminator3.extendedjda.utils.TypeHolder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.GenericEvent
@@ -30,49 +30,36 @@ final
 class CommandHandler
     implements EventListener, Serializable
 {
-    private static boolean                      LOADED                      = false
+    private static boolean                      REGISTERED                  = false
     private static final List<Command>          REGISTERED_COMMANDS         = new ArrayList<>()
 
     private static String                       COMMAND_PREFIX              = "!" /* standard */
-        /* MessageEmbed or String */
-    private static Object                       UNKOWN_COMMAND_MESSAGE      = "Unknown command. Use '!help' for help." /* standard */
+          /* MessageEmbed or String */
+    private static TypeHolder                   UNKOWN_COMMAND_MESSAGE      = new TypeHolder("Unknown command. Use '!help' for help.", [MessageEmbed.class, String.class]) /* standard */
 
     static
-    <T extends MessageEmbed> void init(final JDA jda, final String commandPrefix, final T unkownCommandMessage)
+    void setCommandPrefix(final String commandPrefix)
     {
-        if (LOADED) throw new UnsupportedOperationException("Class already loaded")
-
-        LOADED = true
-
-        jda.addEventListener(this)
-
         COMMAND_PREFIX = commandPrefix
-        UNKOWN_COMMAND_MESSAGE = unkownCommandMessage
     }
 
     static
-    <T extends EmbedBuilder> void init(final JDA jda, final String commandPrefix, final T unknownCommandMessage)
+    void setUnkownCommandMessage(final MessageEmbed unkownCommandMessage)
     {
-        init(jda, commandPrefix, unknownCommandMessage.build())
+        UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage)
     }
 
     static
-    <T extends String> void init(final JDA jda, final String commandPrefix, final T unkownCommandMessage)
+    void setUnkownCommandMessage(final String unkownCommandMessage)
     {
-        if (LOADED) throw new UnsupportedOperationException("Class already loaded")
-
-        LOADED = true
-
-        jda.addEventListener(this)
-
-        COMMAND_PREFIX = commandPrefix
-        UNKOWN_COMMAND_MESSAGE = unkownCommandMessage
+        UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage)
     }
 
     static
-    void registerCommand(final Command command)
+    void registerCommand(final Command command, final JDA jda)
     {
         if (REGISTERED_COMMANDS.contains(command)) throw new UnsupportedOperationException("Command is already registered")
+        if (!REGISTERED) jda.addEventListener(this)
 
         REGISTERED_COMMANDS.add(command)
     }
@@ -96,7 +83,11 @@ class CommandHandler
 
             if (possible.isEmpty())
             {
-                e.getChannel().sendMessage(UNKOWN_COMMAND_MESSAGE).queue()
+                def type = UNKOWN_COMMAND_MESSAGE.getType()
+                def object = UNKOWN_COMMAND_MESSAGE.get()
+
+                if (type == MessageEmbed.class) e.getChannel().sendMessage(object as MessageEmbed).queue()
+                else e.getChannel().sendMessage(object as String).queue()
 
                 return
             }
