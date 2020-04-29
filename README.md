@@ -18,7 +18,7 @@ public class MyClass {
             @Override
             public void onExecute(JDA jda, User user, TextChannel channel, String... args) {
                 if (args.length == 0) {
-                    channel.sendMessage("Requires arguments! Usage: !say <Message>");
+                    channel.sendMessage("Requires arguments! Usage: ?say <Message>");
         
                     return;
                 }
@@ -46,7 +46,7 @@ public class MyClass {
                     event.getChannel().sendMessage("Beep boop").queue();
                 }
             }
-        }
+        };
 
         EventManager.registerListener(listener, api);
 
