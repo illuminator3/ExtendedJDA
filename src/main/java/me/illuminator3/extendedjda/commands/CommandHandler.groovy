@@ -17,6 +17,7 @@
 package me.illuminator3.extendedjda.commands
 
 import me.illuminator3.extendedjda.utils.TypeHolder
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.GenericEvent
@@ -47,6 +48,12 @@ class CommandHandler
     void setUnkownCommandMessage(final MessageEmbed unkownCommandMessage)
     {
         UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage)
+    }
+
+    static
+    void setUnkownCommandMessage(final EmbedBuilder unkownCommandMessage)
+    {
+        UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage.build())
     }
 
     static
