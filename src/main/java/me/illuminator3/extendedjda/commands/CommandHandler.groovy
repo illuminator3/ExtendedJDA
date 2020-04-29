@@ -85,7 +85,7 @@ class CommandHandler
             def e = (GuildMessageReceivedEvent) event
             def cmd = e.getMessage().getContentRaw()
 
-            if (!cmd.startsWith("!")) return
+            if (!cmd.startsWith(COMMAND_PREFIX)) return
 
             def possible = REGISTERED_COMMANDS
                     .stream()
