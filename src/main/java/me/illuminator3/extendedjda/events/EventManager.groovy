@@ -72,12 +72,7 @@ class EventManager
         }
 
         map.sort { k1, k2 ->
-            def v1 = map.get(k1) as Method
-            def v2 = map.get(k2) as Method
-            def a1 = v1.getAnnotation(Event.class)
-            def a2 = v2.getAnnotation(Event.class)
-
-            return a2.priority() - a1.priority()
+            return (k1.getValue() as Method).getAnnotation(Event.class).priority() - (k2.getValue() as Method).getAnnotation(Event.class).priority()
         }
     }
 
