@@ -17,11 +17,11 @@
 package me.illuminator3.extendedjda.events
 
 import me.illuminator3.extendedjda.events.filters.EventFilter
-import me.illuminator3.extendedjda.utils.Checker
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
 
 import java.lang.reflect.Method
+import java.util.function.Predicate
 
 @SuppressWarnings("unused" /* API */)
 final
@@ -31,7 +31,7 @@ class EventManager
     private static final List<EventListener>                                    REGISTERED_LISTENERS            = new ArrayList<>()
     private static final Map<Class<? extends GenericEvent>, Method>             EVENT_HANDLERS                  = new TreeMap<>()
     private static final List<EventFilter>                                      REGISTERED_FILTERS              = new ArrayList<>()
-    private static final Checker<Method>                                        METHOD_CHECKER                  = { method -> method = method as Method; method.getParameters().length == 1 && GenericEvent.class.isAssignableFrom(method.getParameters()[0].getType()) && method.getAnnotations().length >= 1 && method.getAnnotations().toList().stream().anyMatch { annotation -> annotation.annotationType() == Event.class }}
+    private static final Predicate<Method>                                      METHOD_PREDICATE                = { method -> method = method as Method; method.getParameters().length == 1 && GenericEvent.class.isAssignableFrom(method.getParameters()[0].getType()) && method.getAnnotations().length >= 1 && method.getAnnotations().toList().stream().anyMatch { annotation -> annotation.annotationType() == Event.class }}
 
     private static boolean                                                      REGISTERED                      = false
 
@@ -67,7 +67,7 @@ class EventManager
         def map = new TreeMap<>()
 
         listener.getClass().getMethods().toList().each { method ->
-            if (METHOD_CHECKER.check(method))
+            if (METHOD_PREDICATE.test(method))
                 map.put(method.getParameters()[0].getType() as Class<? extends GenericEvent>, method)
         }
 
