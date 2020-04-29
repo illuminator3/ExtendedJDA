@@ -17,6 +17,7 @@
 package me.illuminator3.extendedjda.events
 
 import me.illuminator3.extendedjda.events.filters.EventFilter
+import me.illuminator3.extendedjda.utils.Checker
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
 
@@ -28,54 +29,43 @@ class EventManager
     implements net.dv8tion.jda.api.hooks.EventListener
 {
     private static final List<EventListener>                                    REGISTERED_LISTENERS            = new ArrayList<>()
-    private static final Map<Class<? extends GenericEvent>, Method>             EVENT_HANDLERS                  = new HashMap<>()
+    private static final Map<Class<? extends GenericEvent>, Method>             EVENT_HANDLERS                  = new TreeMap<>()
     private static final List<EventFilter>                                      REGISTERED_FILTERS              = new ArrayList<>()
+    private static final Checker<Method>                                        METHOD_CHECKER                  = { method -> method = method as Method; method.getParameters().length == 1 && GenericEvent.class.isAssignableFrom(method.getParameters()[0].getType()) && method.getAnnotations().length >= 1 && method.getAnnotations().toList().stream().anyMatch { annotation -> annotation.annotationType() == Event.class }}
 
-    private static boolean                                                      init                            = false
-
-    static
-    void init(final JDA jda)
-    {
-        if (init) throw new UnsupportedOperationException("Already initialized")
-
-        init = true
-
-        jda.addEventListener(this)
-    }
+    private static boolean                                                      REGISTERED                      = false
 
     static
-    void registerFilter(final EventFilter filter)
+    void registerFilter(final EventFilter filter, final JDA jda)
         throws UnsupportedOperationException
     {
         if (REGISTERED_FILTERS.contains(filter)) throw new UnsupportedOperationException("Filter is already registered")
+        if (!REGISTERED) jda.addEventListener(this)
 
         REGISTERED_FILTERS.add(filter)
     }
 
     static
-    void registerListener(final EventListener listener)
+    void registerListener(final EventListener listener, final JDA jda)
         throws UnsupportedOperationException
     {
         if (REGISTERED_LISTENERS.contains(listener)) throw new UnsupportedOperationException("Listener is already registered")
+        if (!REGISTERED) jda.addEventListener(this)
 
-        def checker = new Object() {
-            boolean check(final Method method)
-            {
-                return  method.getParameters().length == 1
-                        &&
-                        GenericEvent.class.isAssignableFrom(method.getParameters()[0].getType())
-                        &&
-                        method.getAnnotations().length >= 1
-                        &&
-                        method.getAnnotations().toList().stream().anyMatch { annotation ->
-                            annotation.annotationType() == Event.class
-                        }
-            }
-        }
+        def map = new TreeMap<>()
 
         listener.getClass().getMethods().toList().each { method ->
-            if (checker.check(method))
-                EVENT_HANDLERS.put(method.getParameters()[0].getType() as Class<? extends GenericEvent>, method)
+            if (METHOD_CHECKER.check(method))
+                map.put(method.getParameters()[0].getType() as Class<? extends GenericEvent>, method)
+        }
+
+        map.sort { k1, k2 ->
+            def v1 = map.get(k1) as Method
+            def v2 = map.get(k2) as Method
+            def a1 = v1.getAnnotation(Event.class)
+            def a2 = v2.getAnnotation(Event.class)
+
+            return a2.priority() - a1.priority()
         }
     }
 

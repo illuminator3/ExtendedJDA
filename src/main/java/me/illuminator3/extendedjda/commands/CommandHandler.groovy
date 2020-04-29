@@ -31,12 +31,10 @@ final
 class CommandHandler
     implements EventListener, Serializable
 {
-    private static boolean                      REGISTERED                  = false
     private static final List<Command>          REGISTERED_COMMANDS         = new ArrayList<>()
-
     private static String                       COMMAND_PREFIX              = "!" /* standard */
-          /* MessageEmbed or String */
     private static TypeHolder                   UNKOWN_COMMAND_MESSAGE      = new TypeHolder("Unknown command. Use '!help' for help.", [MessageEmbed.class, String.class]) /* standard */
+    private static boolean                      REGISTERED                  = false
 
     static
     void setCommandPrefix(final String commandPrefix)

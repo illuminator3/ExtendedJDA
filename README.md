@@ -11,7 +11,8 @@ import java.util.Arrays;
 
 public class MyClass {
     public static void commandTest(JDA api) {
-        CommandHandler.init(api, "!", "Unkown command.");
+        CommandHandler.setCommandPrefix("?");
+        CommandHandler.setUnkownCommandMessage("Unknown command.");
         
         CommandHandler.registerCommand(new Command("say", "Says a message", Arrays.asList("tell", "msg")) {
             @Override
@@ -26,7 +27,7 @@ public class MyClass {
         
                 channel.sendMessage(message).queue();
             }
-        });
+        }, api);
     }
 }
 ```
@@ -38,10 +39,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class MyClass {
     public static void eventTest(JDA api) {
-        EventManager.init(api);
-
         EventListener listener = new EventListener() {
-            @Event
+            @Event(Priority.HIGHEST)
             public void onMessageReceived(GuildMessageReceivedEvent event) {
                 if (event.getMessage().getContentRaw().replace(" ", "").contains("goodbot")) {
                     event.getChannel().sendMessage("Beep boop").queue();
@@ -49,11 +48,11 @@ public class MyClass {
             }
         }
 
-        EventManager.registerListener(listener);
+        EventManager.registerListener(listener, api);
 
         EventFilter antiBotFilter = (event, handler) -> event instanceof GuildMessageReceivedEvent && ((GuildMessageReceivedEvent) event).getAuthor().isBot();
 
-        EventManager.registerFilter(antiBotFilter);
+        EventManager.registerFilter(antiBotFilter, api);
     }
 }
 ```

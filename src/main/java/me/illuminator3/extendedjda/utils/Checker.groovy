@@ -14,16 +14,10 @@
  		limitations under the License.
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-package me.illuminator3.extendedjda.events
+package me.illuminator3.extendedjda.utils
 
-import java.lang.annotation.ElementType
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-import java.lang.annotation.Target
-
-@Target([ ElementType.METHOD ])
-@Retention(RetentionPolicy.RUNTIME)
-@interface Event
+@FunctionalInterface
+interface Checker<T>
 {
-    Priority priority() default Priority.NORMAL
+    boolean check(T obj)
 }
