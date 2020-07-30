@@ -22,5 +22,5 @@ import net.dv8tion.jda.api.events.GenericEvent
 @FunctionalInterface
 interface EventFilter
 {
-    boolean filter(final GenericEvent event, final EventListener handler)
+    boolean filter(GenericEvent event, EventListener handler)
 }

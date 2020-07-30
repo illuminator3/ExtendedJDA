@@ -16,6 +16,7 @@
 
 package me.illuminator3.extendedjda.events
 
+import groovyjarjarantlr4.v4.runtime.misc.MultiMap
 import me.illuminator3.extendedjda.events.filters.EventFilter
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.GenericEvent
@@ -29,14 +30,16 @@ class EventManager
     implements net.dv8tion.jda.api.hooks.EventListener
 {
     private static final List<EventListener>                                    REGISTERED_LISTENERS            = new ArrayList<>()
-    private static final Map<Class<? extends GenericEvent>, Method>             EVENT_HANDLERS                  = new TreeMap<>()
+    private static final Map<Class<? extends GenericEvent>, Method>             EVENT_HANDLERS                  = new MultiMap<>() as Map<Class<? extends GenericEvent>, Method>
     private static final List<EventFilter>                                      REGISTERED_FILTERS              = new ArrayList<>()
+                                                                                                                    // error; similiar to https://youtrack.jetbrains.com/issue/IDEA-228890
     private static final Predicate<Method>                                      METHOD_PREDICATE                = { method -> method = method as Method; method.getParameters().length == 1 && GenericEvent.class.isAssignableFrom(method.getParameters()[0].getType()) && method.getAnnotations().length >= 1 && method.getAnnotations().toList().stream().anyMatch { annotation -> annotation.annotationType() == Event.class }}
+    private static final EventManager                                           $THIS                           = new EventManager()
 
     private static boolean                                                      REGISTERED                      = false
 
     static
-    void registerFilter(final EventFilter filter, final JDA jda)
+    void registerFilter(EventFilter filter, JDA jda)
         throws UnsupportedOperationException
     {
         if (REGISTERED_FILTERS.contains(filter)) throw new UnsupportedOperationException("Filter is already registered")
@@ -45,14 +48,14 @@ class EventManager
         {
             REGISTERED = true
 
-            jda.addEventListener(this)
+            jda.addEventListener($THIS)
         }
 
         REGISTERED_FILTERS.add(filter)
     }
 
     static
-    void registerListener(final EventListener listener, final JDA jda)
+    void registerListener(EventListener listener, JDA jda)
         throws UnsupportedOperationException
     {
         if (REGISTERED_LISTENERS.contains(listener)) throw new UnsupportedOperationException("Listener is already registered")
@@ -61,10 +64,10 @@ class EventManager
         {
             REGISTERED = true
 
-            jda.addEventListener(this)
+            jda.addEventListener($THIS)
         }
 
-        def map = new TreeMap<>()
+        def map = new HashMap<Class<? extends GenericEvent>, Method>()
 
         listener.getClass().getMethods().toList().each { method ->
             if (METHOD_PREDICATE.test(method))
@@ -74,10 +77,12 @@ class EventManager
         map.sort { k1, k2 ->
             return (k1.getValue() as Method).getAnnotation(Event.class).priority() - (k2.getValue() as Method).getAnnotation(Event.class).priority()
         }
+
+        EVENT_HANDLERS.putAll(map)
     }
 
     private static
-    void handle(final GenericEvent event)
+    void handle(GenericEvent event)
     {
         def clazz = event.getClass() as Class<? extends GenericEvent>
 
@@ -102,7 +107,7 @@ class EventManager
     }
 
     static
-    void callEvent(final GenericEvent event)
+    void callEvent(GenericEvent event)
     {
         handle(event)
     }

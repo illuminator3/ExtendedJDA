@@ -32,36 +32,37 @@ class CommandHandler
     implements EventListener, Serializable
 {
     private static final List<Command>          REGISTERED_COMMANDS         = new ArrayList<>()
+    private static final CommandHandler         $THIS                       = new CommandHandler()
     private static String                       COMMAND_PREFIX              = "!" /* standard */
     private static TypeHolder                   UNKOWN_COMMAND_MESSAGE      = new TypeHolder("Unknown command. Use '!help' for help.", [MessageEmbed.class, String.class]) /* standard */
     private static boolean                      REGISTERED                  = false
 
     static
-    void setCommandPrefix(final String commandPrefix)
+    void setCommandPrefix(String commandPrefix)
     {
         COMMAND_PREFIX = commandPrefix
     }
 
     static
-    void setUnkownCommandMessage(final MessageEmbed unkownCommandMessage)
+    void setUnkownCommandMessage(MessageEmbed unkownCommandMessage)
     {
         UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage)
     }
 
     static
-    void setUnkownCommandMessage(final EmbedBuilder unkownCommandMessage)
+    void setUnkownCommandMessage(EmbedBuilder unkownCommandMessage)
     {
         UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage.build())
     }
 
     static
-    void setUnkownCommandMessage(final String unkownCommandMessage)
+    void setUnkownCommandMessage(String unkownCommandMessage)
     {
         UNKOWN_COMMAND_MESSAGE.set(unkownCommandMessage)
     }
 
     static
-    void registerCommand(final Command command, final JDA jda)
+    void registerCommand(Command command, JDA jda)
     {
         if (REGISTERED_COMMANDS.contains(command)) throw new UnsupportedOperationException("Command is already registered")
 
@@ -69,14 +70,14 @@ class CommandHandler
         {
             REGISTERED = true
 
-            jda.addEventListener(this)
+            jda.addEventListener($THIS)
         }
 
         REGISTERED_COMMANDS.add(command)
     }
 
     @Override
-    void onEvent(final GenericEvent event)
+    void onEvent(GenericEvent event)
     {
         if (event instanceof GuildMessageReceivedEvent)
         {
@@ -88,7 +89,7 @@ class CommandHandler
             def possible = REGISTERED_COMMANDS
                     .stream()
                     .filter { c ->
-                        c.getName().equalsIgnoreCase(cmd.substring(1)) || c.getAliases().contains(cmd.substring(1))
+                        c.getName().equalsIgnoreCase(cmd.split(" ")[0].substring(1)) || c.getAliases().contains(cmd.split(" ")[0].substring(1))
                     }
                     .collect(Collectors.toList())
 
@@ -103,14 +104,14 @@ class CommandHandler
                 return
             }
 
-            possible
-                    .get(0)
-                    .onExecute(
-                        e.getJDA(),
-                        e.getMember().getUser(),
-                        e.getChannel(),
-                        cmd.split(" ") .length <= 1 ?  new String[0] : System.arraycopy(cmd.split(" "), 1, [], 0, cmd.split(" ").length - 1)
-                    )
+            def command = possible.get(0)
+            def split = cmd.split(" ")
+            def args = new String[0]
+
+            if (split.length > 1)
+                args = Arrays.copyOfRange(split, 1, split.length)
+
+            command.onExecute(e.getJDA(), e.getMember().getUser(), e.getChannel(), args)
         }
     }
 }

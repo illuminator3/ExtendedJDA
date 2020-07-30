@@ -23,14 +23,14 @@ class TypeHolder
     private Class<?> currentType
     private Object current
 
-    TypeHolder(final Object initial, final List<Class<?>> possible)
+    TypeHolder(Object initial, List<Class<?>> possible)
     {
         this.possibleTypes = possible
         this.currentType = initial.class
         this.current = initial
     }
 
-    void set(final Object object)
+    void set(Object object)
     {
         if (!possibleTypes.contains(object.class)) throw new IllegalArgumentException("The given object's type is not an instance of the possible ones")
 

@@ -29,7 +29,7 @@ class Command
                          description
     private final List<String> aliases
 
-    Command(final String name, final String description, final List<String> aliases)
+    Command(String name, String description, List<String> aliases)
     {
         this.name = name
         this.description = description
@@ -51,5 +51,5 @@ class Command
         return this.aliases
     }
 
-    abstract void onExecute(final JDA jda, final User user, final TextChannel channel, final String... args)
+    abstract void onExecute(JDA jda, User user, TextChannel channel, String... args)
 }
